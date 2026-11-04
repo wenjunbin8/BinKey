@@ -1,0 +1,8 @@
+/* 内嵌图标（icons/*.ico，由 1.jpg / 2.jpg / 3.jpg 生成）
+   1 = 程序图标（Explorer / 快捷方式 / 任务栏）
+   2 = 托盘"开启"图标   —— 自定义类型 ICOFILE，由 loadEmbeddedIcon() 解析
+   3 = 托盘"关闭"图标
+*/
+1 ICON "icons/BinKey.ico"
+2 ICOFILE "icons/tray_on.ico"
+3 ICOFILE "icons/tray_off.ico"
