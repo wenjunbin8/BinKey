@@ -1,7 +1,7 @@
 // BinKeySetup.cpp —— BinKey 单文件安装引导程序
 //
 // 特点:
-//   * 一个 exe 里嵌入了 BinKey.exe / config.cfg / README / CHANGELOG / 4 个预设方案
+//   * 一个 exe 里嵌入了 BinKey.exe / config.cfg / README / CHANGELOG / FIXES / fix-icon-cache.bat / 4 个预设方案
 //   * 无需管理员权限，无需安装运行环境（静态链接）
 //   * 向导式: 欢迎 -> 位置(文件夹选择器) -> 选项 -> 安装 -> 完成
 //   * 选项只有三个: 开机自动启动 / 桌面快捷方式 / 装完立即启动
@@ -25,7 +25,7 @@
 
 static const wchar_t* kCls    = L"BinKeySetupWizard";
 static const char*    kMagic  = "DSKSETUP";
-static const char*    kVer    = "1.0.0";
+static const char*    kVer    = "1.0.1";
 
 // ---- 控件 ID ----
 enum {

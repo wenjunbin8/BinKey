@@ -59,6 +59,7 @@ build\packer.exe build\BinKeySetup_stub.exe BinKeySetup.exe ^
   "config.cfg=config.cfg" ^
   "README.md=README.md" ^
   "CHANGELOG.md=CHANGELOG.md" ^
+  "FIXES.md=FIXES.md" ^
   "fix-icon-cache.bat=fix-icon-cache.bat" ^
   "profiles/snap-tap.cfg=profiles\snap-tap.cfg" ^
   "profiles/valorant-stop.cfg=profiles\valorant-stop.cfg" ^

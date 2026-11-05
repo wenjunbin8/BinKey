@@ -1,0 +1,16 @@
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     3ms] [tray] NIM_ADD: 成功
+[  3046ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\binkey_hot.cfg (enabled=0 socd=1 dks=0)
+[  3047ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=关）
+[  4298ms] [event]    A down
+[  4449ms] [event]    D down
+[  5496ms] [event]    A up
+[  6548ms] [event]    D up
+[  6890ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\binkey_hot.cfg (enabled=1 socd=1 dks=0)
+[  6890ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=关）
+[  8117ms] [event]    A down
+[  8263ms] [event]    D down
+[  8263ms] [socd-release] A
+[  9305ms] [event]    A up
+[  9305ms] [swallow]   A (keyup, 已被 SOCD 释放)
+[ 10352ms] [event]    D up

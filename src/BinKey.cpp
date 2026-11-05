@@ -41,7 +41,7 @@
 // ---------------------------------------------------------------------------
 // 常量 / 类型
 // ---------------------------------------------------------------------------
-static const char*     kVersion = "1.0.0";        // 版本号（与 BinKeySetup.exe 一致）
+static const char*     kVersion = "1.0.1";        // 版本号（与 BinKeySetup.exe 一致）
 static const ULONG_PTR TAG_SELF = 0x444B534BULL; // "DKSK" —— 我们自己注入的事件
 static const ULONG_PTR TAG_TEST = 0x54455354ULL; // "TEST" —— selftest 模拟的"物理"事件
 
@@ -71,8 +71,10 @@ struct Config {
     std::wstring path;
     bool debug = false;
     bool autostart = false;
-    bool socdEnabled = true;
-    bool dksEnabled = true;
+    bool socdEnabled = true;     // 用户对 SOCD 的单独设定（持久化）
+    bool dksEnabled = true;      // 用户对 DKS 的单独设定（持久化）
+    bool enabled = true;         // 总开关："禁用全部功能"只是关掉总开关，
+                                 // 重新启用时恢复上面的单独设定，而不是两个都开
     int toggleKey = 0;
     std::vector<Group> groups;
     std::vector<Rule> rules;
@@ -366,7 +368,42 @@ static int groupIndexOf(int vk) {
     return it == g_groupOf.end() ? -1 : it->second;
 }
 
-static bool totalEnabled() { return g_cfg.socdEnabled || g_cfg.dksEnabled; }
+static void setTrayIcon();       // 前向声明
+static bool persistSwitches();   // 前向声明（定义在 saveConfig 附近）
+
+// 开关语义：
+//   socdEnabled / dksEnabled = 用户对两个功能各自的设定（会被写回 config.cfg）
+//   enabled = 总开关。"禁用全部功能 / 左键托盘 / toggle_key" 只切总开关；
+//             重新启用时恢复用户之前的单独设定（例如只开 SOCD），而不是两个都开。
+static bool socdActive() { return g_cfg.enabled && g_cfg.socdEnabled; }
+static bool dksActive()  { return g_cfg.enabled && g_cfg.dksEnabled; }
+static bool totalEnabled() { return socdActive() || dksActive(); }
+
+static void setFeature(int which, bool on) {   // 2 = SOCD, 3 = DKS
+    if (which == 2) g_cfg.socdEnabled = on; else g_cfg.dksEnabled = on;
+    if (on) g_cfg.enabled = true;              // 单独开启某个功能时总开关自动打开
+    setTrayIcon();
+    persistSwitches();
+    logf("[switch] %s = %s", which == 2 ? "SOCD" : "DKS", on ? "开启" : "关闭");
+}
+
+static void toggleAll() {
+    if (totalEnabled()) {
+        g_cfg.enabled = false;                  // 单独设定保持不变，重新启用时恢复
+    } else {
+        g_cfg.enabled = true;
+        // 两个单独开关都被用户关掉了 —— 这时"启用全部"就是字面意义上的全部开启
+        if (!g_cfg.socdEnabled && !g_cfg.dksEnabled) {
+            g_cfg.socdEnabled = true;
+            g_cfg.dksEnabled  = true;
+        }
+    }
+    setTrayIcon();
+    persistSwitches();
+    logf("[switch] 全部功能 %s（单独设定: SOCD=%s DKS=%s）",
+         totalEnabled() ? "启用" : "禁用",
+         g_cfg.socdEnabled ? "开" : "关", g_cfg.dksEnabled ? "开" : "关");
+}
 
 static void releaseLogical(int vk) {
     auto it = g_state.find(vk);
@@ -452,11 +489,7 @@ static LRESULT CALLBACK llHook(int code, WPARAM wParam, LPARAM lParam) {
         if (down) {
             if (!st.phys) {
                 st.phys = true; st.downAt = nowMs();
-                bool on = totalEnabled();
-                g_cfg.socdEnabled = g_cfg.dksEnabled = !on;
-                setTrayIcon();
-                logf("[toggle] SOCD=%s DKS=%s", g_cfg.socdEnabled ? "开" : "关",
-                     g_cfg.dksEnabled ? "开" : "关");
+                toggleAll();
             }
         } else st.phys = false;
         return CallNextHookEx(g_hook, code, wParam, lParam);
@@ -479,7 +512,7 @@ static LRESULT CALLBACK llHook(int code, WPARAM wParam, LPARAM lParam) {
 
         bool passed = true;
         int gi = groupIndexOf(vk);
-        if (gi >= 0 && g_cfg.socdEnabled && g_cfg.groups[gi].mode != SOC_OFF) {
+        if (gi >= 0 && socdActive() && g_cfg.groups[gi].mode != SOC_OFF) {
             int winner = groupWinner(g_cfg.groups[gi]);
             st.logical = (vk == winner);
             passed = st.logical;
@@ -488,7 +521,7 @@ static LRESULT CALLBACK llHook(int code, WPARAM wParam, LPARAM lParam) {
             st.logical = true;
         }
 
-        if (passed && g_cfg.dksEnabled) {
+        if (passed && dksActive()) {
             for (const Rule& r : g_cfg.rules) {
                 if (r.key != vk || r.tap == 0) continue;
                 if (r.on == ON_RELEASE) continue;
@@ -522,7 +555,7 @@ static LRESULT CALLBACK llHook(int code, WPARAM wParam, LPARAM lParam) {
     // 先让系统处理这个 key-up（如果它逻辑上是按下），再同步组内其它键：
     // 例如 A 被 snap 释放后仍物理按着，此时 D 松手 → A 应当恢复为"按下"
     int gi = groupIndexOf(vk);
-    bool socdActive = (gi >= 0 && g_cfg.socdEnabled && g_cfg.groups[gi].mode != SOC_OFF);
+    bool socdOn = (gi >= 0 && socdActive() && g_cfg.groups[gi].mode != SOC_OFF);
     LRESULT ret;
     if (wasLogical) {
         ret = CallNextHookEx(g_hook, code, wParam, lParam);
@@ -530,7 +563,7 @@ static LRESULT CALLBACK llHook(int code, WPARAM wParam, LPARAM lParam) {
         logf("[swallow]   %s (keyup, 已被 SOCD 释放)", keyName(vk).c_str());
         ret = 1;
     }
-    if (socdActive) syncGroup(gi, vk);
+    if (socdOn) syncGroup(gi, vk);
 
     if (g_cfg.dksEnabled) {
         long long held = nowMs() - st.downAt;
@@ -608,6 +641,8 @@ static bool loadConfig(const std::wstring& path, std::string& err) {
         if (key == "debug") c.debug = (!toks.empty() && toks[0] != "0");
         else if (key == "autostart") c.autostart = (!toks.empty() && toks[0] != "0");
         else if (key == "toggle_key") c.toggleKey = parseKey(toks.empty() ? "" : toks[0]);
+        else if (key == "enabled" || key == "master" || key == "总开关")
+            c.enabled = toks.empty() || toks[0] != "0";
         else if (key == "socd") c.socdEnabled = toks.empty() || toks[0] != "0";
         else if (key == "dks") c.dksEnabled = toks.empty() || toks[0] != "0";
         else if (key == "group") {
@@ -685,9 +720,10 @@ static void buildManagedKeys() {
 static void printConfig() {
     if (!g_console) return;
     printf("配置文件: %s\n", u8(g_cfg.path).c_str());
-    printf("debug=%d autostart=%d toggle_key=%s socd=%d dks=%d\n",
+    printf("debug=%d autostart=%d toggle_key=%s enabled=%d socd=%d dks=%d\n",
            g_cfg.debug ? 1 : 0, g_cfg.autostart ? 1 : 0, keyName(g_cfg.toggleKey).c_str(),
-           g_cfg.socdEnabled ? 1 : 0, g_cfg.dksEnabled ? 1 : 0);
+           g_cfg.enabled ? 1 : 0, g_cfg.socdEnabled ? 1 : 0, g_cfg.dksEnabled ? 1 : 0);
+    printf("实际生效: SOCD=%s DKS=%s\n", socdActive() ? "开" : "关", dksActive() ? "开" : "关");
     for (const Group& g : g_cfg.groups) {
         printf("SOCD 组:");
         for (int vk : g.keys) printf(" %s", keyName(vk).c_str());
@@ -866,10 +902,11 @@ static void setTrayIcon() {
     nid.hWnd = g_trayWnd;
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_TIP;
-    nid.hIcon = (g_cfg.socdEnabled || g_cfg.dksEnabled) ? g_iconOn : g_iconOff;
+    nid.hIcon = totalEnabled() ? g_iconOn : g_iconOff;
     swprintf(nid.szTip, sizeof(nid.szTip) / sizeof(WCHAR),
-             L"BinKey - SOCD:%s DKS:%s",
-             g_cfg.socdEnabled ? L"开" : L"关", g_cfg.dksEnabled ? L"开" : L"关");
+             L"BinKey - SOCD:%s DKS:%s%s",
+             socdActive() ? L"开" : L"关", dksActive() ? L"开" : L"关",
+             g_cfg.enabled ? L"" : L" (总开关已关闭)");
     Shell_NotifyIconW(NIM_MODIFY, &nid);
 }
 
@@ -886,12 +923,24 @@ static void showMenu() {
     // 必须用 CreatePopupMenu：CreateMenu 创建的是"菜单栏"，用 TrackPopupMenu
     // 弹出时只有几像素宽，表现为"菜单显示异常"（实测 6x101 vs 170x103）。
     HMENU menu = CreatePopupMenu();
-    AppendMenuW(menu, MF_STRING, 1, (g_cfg.socdEnabled || g_cfg.dksEnabled) ? L"禁用全部功能" : L"启用全部功能");
+    // 总开关的标签：关闭时提示"恢复上次设定"，避免用户以为重新启用会把两个都打开
+    std::wstring allLabel;
+    if (totalEnabled()) allLabel = L"禁用全部功能";
+    else if (g_cfg.socdEnabled || g_cfg.dksEnabled) {
+        std::wstring saved;
+        if (g_cfg.socdEnabled && g_cfg.dksEnabled) saved = L"SOCD + DKS";
+        else if (g_cfg.socdEnabled) saved = L"仅 SOCD";
+        else saved = L"仅 DKS";
+        allLabel = L"启用全部功能（恢复上次设定: " + saved + L"）";
+    } else {
+        allLabel = L"启用全部功能";
+    }
+    AppendMenuW(menu, MF_STRING, 1, allLabel.c_str());
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
-    AppendMenuW(menu, MF_STRING, 2, g_cfg.socdEnabled ? L"SOCD(Snap Tap)：开启  [点击关闭]"
-                                                      : L"SOCD(Snap Tap)：关闭  [点击开启]");
-    AppendMenuW(menu, MF_STRING, 3, g_cfg.dksEnabled ? L"DKS(动态键程)：开启  [点击关闭]"
-                                                     : L"DKS(动态键程)：关闭  [点击开启]");
+    AppendMenuW(menu, MF_STRING, 2, socdActive() ? L"SOCD(Snap Tap)：开启  [点击关闭]"
+                                                 : L"SOCD(Snap Tap)：关闭  [点击开启]");
+    AppendMenuW(menu, MF_STRING, 3, dksActive() ? L"DKS(动态键程)：开启  [点击关闭]"
+                                                : L"DKS(动态键程)：关闭  [点击开启]");
     AppendMenuW(menu, MF_STRING, 4, L"规则编辑器 (自定义 DKS / SOCD 规则)...");
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
     AppendMenuW(menu, MF_STRING, 5, L"重新加载配置");
@@ -927,10 +976,7 @@ static LRESULT CALLBACK trayWndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
         if (l == WM_LBUTTONDOWN || l == WM_LBUTTONUP) {
             if (now - lastToggleMs > 300) {
                 lastToggleMs = now;
-                bool on = g_cfg.socdEnabled || g_cfg.dksEnabled;
-                g_cfg.socdEnabled = g_cfg.dksEnabled = !on;
-                setTrayIcon();
-                logf("[tray] 全部功能 %s", on ? "禁用" : "启用");
+                toggleAll();
             }
             return 0;
         }
@@ -942,17 +988,9 @@ static LRESULT CALLBACK trayWndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
     if (msg == WM_COMMAND) {
         // 弹出菜单的 WM_COMMAND：wParam 低 16 位是菜单项 id，高 16 位是菜单句柄
         switch (LOWORD(w)) {
-            case 1: {
-                bool on = g_cfg.socdEnabled || g_cfg.dksEnabled;
-                g_cfg.socdEnabled = g_cfg.dksEnabled = !on;
-                setTrayIcon();
-                logf("[tray] 全部功能 %s", on ? "禁用" : "启用");
-                break;
-            }
-            case 2: g_cfg.socdEnabled = !g_cfg.socdEnabled; setTrayIcon();
-                    logf("[tray] SOCD = %s", g_cfg.socdEnabled ? "开启" : "关闭"); break;
-            case 3: g_cfg.dksEnabled = !g_cfg.dksEnabled; setTrayIcon();
-                    logf("[tray] DKS = %s", g_cfg.dksEnabled ? "开启" : "关闭"); break;
+            case 1: toggleAll(); break;
+            case 2: setFeature(2, !socdActive()); break;
+            case 3: setFeature(3, !dksActive()); break;
             case 4: openEditor(); break;
             case 5: reloadConfig(); break;
             case 6: ShellExecuteW(nullptr, L"open", g_cfg.path.c_str(), nullptr, nullptr, SW_SHOW); break;
@@ -1020,15 +1058,15 @@ static void installTray() {
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = WM_TRAY;
-    nid.hIcon = (g_cfg.socdEnabled || g_cfg.dksEnabled) ? g_iconOn : g_iconOff;
+    nid.hIcon = totalEnabled() ? g_iconOn : g_iconOff;
     swprintf(nid.szTip, sizeof(nid.szTip) / sizeof(WCHAR),
-             L"BinKey - SOCD:%s DKS:%s", g_cfg.socdEnabled ? L"开" : L"关",
-             g_cfg.dksEnabled ? L"开" : L"关");
+             L"BinKey - SOCD:%s DKS:%s", socdActive() ? L"开" : L"关",
+             dksActive() ? L"开" : L"关");
     BOOL added = Shell_NotifyIconW(NIM_ADD, &nid);
     logf("[tray] NIM_ADD: %s", added ? "成功" : "失败");
     if (!added) {
         // 回退：用自绘图标再试一次，确保托盘一定有图标
-        nid.hIcon = makeIcon(g_cfg.socdEnabled || g_cfg.dksEnabled);
+        nid.hIcon = makeIcon(totalEnabled());
         added = Shell_NotifyIconW(NIM_ADD, &nid);
         logf("[tray] NIM_ADD(回退): %s", added ? "成功" : "失败");
     }
@@ -1072,9 +1110,12 @@ static bool saveConfig() {
     if (!f) return false;
     fputs("# BinKey 配置文件 —— 由 BinKey 规则编辑器保存\n", f);
     fputs("# 手动编辑也可以，格式见 README.md\n", f);
+    fputs("# enabled = 总开关。禁用全部功能只关掉总开关，重新启用时\n", f);
+    fputs("#           恢复 socd / dks 各自的设定（不会两个都打开）\n", f);
     fprintf(f, "debug = %d\n", g_cfg.debug ? 1 : 0);
     fprintf(f, "autostart = %d\n", g_cfg.autostart ? 1 : 0);
     fprintf(f, "toggle_key = %s\n", keyName(g_cfg.toggleKey).c_str());
+    fprintf(f, "enabled = %d\n", g_cfg.enabled ? 1 : 0);
     fprintf(f, "socd = %d\n", g_cfg.socdEnabled ? 1 : 0);
     fprintf(f, "dks = %d\n", g_cfg.dksEnabled ? 1 : 0);
     fputs("\n# ---- SOCD(Snap Tap) 组 ----\n", f);
@@ -1103,6 +1144,65 @@ static bool saveConfig() {
     }
     fclose(f);
     logf("[save] 配置已写入 %s", u8(g_cfg.path).c_str());
+    return true;
+}
+
+// 只更新 config.cfg 里的开关行（保留其它内容与注释），
+// 用于托盘 / 热键切换的持久化，这样重启后能恢复上次的单独设定。
+static bool persistSwitches() {
+    if (g_cfg.path.empty()) return false;
+    FILE* f = _wfopen(g_cfg.path.c_str(), L"rb");
+    if (!f) return false;
+    std::string data;
+    char buf[4096];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof buf, f)) > 0) data.append(buf, buf + n);
+    fclose(f);
+
+    std::vector<std::string> lines;
+    size_t i = 0;
+    while (i < data.size()) {
+        size_t nl = data.find('\n', i);
+        if (nl == std::string::npos) { lines.push_back(data.substr(i)); break; }
+        lines.push_back(data.substr(i, nl - i));
+        i = nl + 1;
+    }
+
+    bool haveSocd = false, haveDks = false, haveEnabled = false;
+    for (std::string& line : lines) {
+        std::string s = line;
+        size_t cr = 0;
+        while (!s.empty() && s.back() == '\r') { s.pop_back(); ++cr; }
+        std::string t = trim(s);
+        if (t.empty() || t[0] == '#') continue;
+        size_t eq = t.find('=');
+        if (eq == std::string::npos) continue;
+        std::string key = trim(t.substr(0, eq));
+        if (key != "socd" && key != "dks" && key != "enabled") continue;
+        std::string val = trim(t.substr(eq + 1));
+        size_t hash = val.find('#');
+        std::string comment = (hash == std::string::npos) ? "" : "  " + trim(val.substr(hash));
+        if (key == "socd")      { val = g_cfg.socdEnabled ? "1" : "0"; haveSocd = true; }
+        else if (key == "dks")  { val = g_cfg.dksEnabled ? "1" : "0";  haveDks = true; }
+        else                    { val = g_cfg.enabled ? "1" : "0";     haveEnabled = true; }
+        line = key + " = " + val + comment + (cr ? std::string(cr, '\r') : std::string());
+    }
+    // 缺少的开关行追加到文件末尾（解析器不关心顺序）
+    if (!haveEnabled) lines.push_back("enabled = " + std::string(g_cfg.enabled ? "1" : "0"));
+    if (!haveSocd)    lines.push_back("socd = " + std::string(g_cfg.socdEnabled ? "1" : "0"));
+    if (!haveDks)     lines.push_back("dks = " + std::string(g_cfg.dksEnabled ? "1" : "0"));
+
+    std::string out;
+    for (size_t k = 0; k < lines.size(); ++k) { out += lines[k]; if (k + 1 < lines.size()) out += "\n"; }
+    out += "\n";
+
+    FILE* w = _wfopen(g_cfg.path.c_str(), L"wb");
+    if (!w) return false;
+    fwrite(out.data(), 1, out.size(), w);
+    fclose(w);
+    logf("[save] 开关状态已写入 %s (enabled=%d socd=%d dks=%d)",
+         u8(g_cfg.path).c_str(), g_cfg.enabled ? 1 : 0,
+         g_cfg.socdEnabled ? 1 : 0, g_cfg.dksEnabled ? 1 : 0);
     return true;
 }
 
@@ -1440,14 +1540,12 @@ static LRESULT CALLBACK editorWndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
                 case ID_BTN_SOCD_DELETE: editorDeleteGroup(); break;
                 case ID_BTN_SAVE:   saveConfig(); break;
                 case ID_CHK_SOC:
-                    g_cfg.socdEnabled = (SendMessageW(g_chkSocd, BM_GETCHECK, 0, 0) == BST_CHECKED);
-                    setTrayIcon(); saveConfig();
-                    logf("[editor] SOCD = %s", g_cfg.socdEnabled ? "开启" : "关闭");
+                    setFeature(2, (SendMessageW(g_chkSocd, BM_GETCHECK, 0, 0) == BST_CHECKED));
+                    saveConfig();
                     break;
                 case ID_CHK_DKS:
-                    g_cfg.dksEnabled = (SendMessageW(g_chkDks, BM_GETCHECK, 0, 0) == BST_CHECKED);
-                    setTrayIcon(); saveConfig();
-                    logf("[editor] DKS = %s", g_cfg.dksEnabled ? "开启" : "关闭");
+                    setFeature(3, (SendMessageW(g_chkDks, BM_GETCHECK, 0, 0) == BST_CHECKED));
+                    saveConfig();
                     break;
                 case ID_BTN_DEFAULT: {
                     g_cfg.rules.clear();
@@ -1883,6 +1981,71 @@ static void selfTest(bool live = false) {
         UnhookWindowsHookEx(g_hook); g_hook = nullptr; clearStuckKeys();
     }
 
+    printf("=== 场景 14: 总开关保留单独设定（禁用全部 -> 重新启用） ===\n");
+    {
+        Group g; g.keys = {A, D}; g.mode = SOC_SNAP;
+        Rule r; r.key = A; r.on = ON_RELEASE; r.tap = X; r.tapMs = 20; r.minHoldMs = 30; r.cond = C_ACTIVE;
+        setScenario({g}, {r});
+        g_cfg.socdEnabled = true;    // 用户只开 SOCD
+        g_cfg.dksEnabled  = false;   // DKS 关闭
+        g_cfg.enabled     = true;
+        buildManagedKeys();
+        installHook();
+
+        // 把配置文件指向一个临时文件，避免自检改动用户真实的 config.cfg
+        wchar_t tmpDir[MAX_PATH]; GetTempPathW(MAX_PATH, tmpDir);
+        std::wstring savedPath = g_cfg.path;
+        std::wstring tmpPath = std::wstring(tmpDir) + L"BinKey_selftest.cfg";
+        {
+            FILE* tf = _wfopen(tmpPath.c_str(), L"wb");
+            if (tf) {
+                fputs("debug = 0\nsocd = 1\ndks = 0\n"
+                      "rule = key=A on=release tap=X tap_ms=20 min_hold_ms=30 cond=active\n", tf);
+                fclose(tf);
+            }
+        }
+        g_cfg.path = tmpPath;
+
+        auto checkFlag = [&](const char* label, bool got, bool want) {
+            printf("  %-36s 实际=%s 期望=%s  %s\n", label, got ? "开" : "关",
+                   want ? "开" : "关", got == want ? "PASS" : "FAIL");
+        };
+
+        checkFlag("只开 SOCD: socdActive", socdActive(), true);
+        checkFlag("只开 SOCD: dksActive", dksActive(), false);
+        injectTest(A, true); pumpUntil(60);
+        injectTest(D, true); pumpUntil(30);
+        check("只开 SOCD: A 被 snap 释放", A, false);
+        injectTest(A, false); pumpUntil(60);
+        check("DKS 关闭: 松 A 不触发轻点 X", X, false);
+
+        toggleAll();                                   // 禁用全部功能
+        checkFlag("禁用全部: 总开关关闭", !g_cfg.enabled, true);
+        checkFlag("禁用全部: 单独设定保留 SOCD", g_cfg.socdEnabled, true);
+        checkFlag("禁用全部: 单独设定保留 DKS(关)", g_cfg.dksEnabled, false);
+        injectTest(D, false); pumpUntil(30);
+        injectTest(A, true); pumpUntil(60);
+        check("禁用全部: A 不被释放(SOCD 不生效)", A, true);
+
+        toggleAll();                                   // 重新启用 -> 只恢复 SOCD
+        checkFlag("重新启用: SOCD 仍开", socdActive(), true);
+        checkFlag("重新启用: DKS 仍关(不是两个都开)", dksActive(), false);
+        injectTest(D, true); pumpUntil(30);
+        check("重新启用: SOCD 仍然生效(A 被释放)", A, false);
+        UnhookWindowsHookEx(g_hook); g_hook = nullptr; clearStuckKeys();
+
+        // 持久化：把开关写回配置文件，再读回 —— 模拟"退出程序后重新打开"
+        persistSwitches();
+        std::string err2;
+        bool reloaded = loadConfig(tmpPath, err2);
+        bool ok = reloaded && g_cfg.enabled && g_cfg.socdEnabled && !g_cfg.dksEnabled;
+        printf("  %-36s 实际=%d/%d/%d 期望=1/1/0  %s\n", "重启后读回 enabled/socd/dks",
+               g_cfg.enabled ? 1 : 0, g_cfg.socdEnabled ? 1 : 0, g_cfg.dksEnabled ? 1 : 0,
+               ok ? "PASS" : "FAIL");
+        g_cfg.path = savedPath;
+        DeleteFileW(tmpPath.c_str());
+    }
+
     // --- 图标自检 ---
     {
         HICON on  = loadEmbeddedIcon(2);
@@ -2024,6 +2187,7 @@ int main(int argc, char** argv) {
             if (w) {
                 fputs("# BinKey 默认配置（自动生成）\n"
                       "debug = 0\n"
+                      "enabled = 1\n"
                       "socd = 1\n"
                       "group = A D mode=snap\n"
                       "group = W S mode=snap\n"

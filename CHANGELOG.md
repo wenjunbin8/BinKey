@@ -1,5 +1,21 @@
 # BinKey 更新记录
 
+> 这里只写**每个版本改了什么**（改动清单）。
+> 问题的原因、修复过程、验证方法都集中在 **[FIXES.md](FIXES.md)**。
+
+## v1.0.1 — 保留上次开关状态（总开关与单独开关分离）
+- **总开关与单独开关分离，状态持久化**：`config.cfg` 新增 `enabled`（总开关）。
+  托盘左键 / 菜单"禁用全部功能" / `toggle_key` 热键只切总开关，
+  重新启用时恢复用户之前的 `socd` / `dks` 单独设定（不会两个都打开）；
+  每次切换都会写回 `config.cfg`，所以退出程序再打开也只开启上次那个功能。
+  只有两个单独开关都被手动关闭过，"启用全部功能"才会两个都开。
+- **新增 `--selftest` 场景 14**（12 项断言）：验证"只开 SOCD → 禁用全部 → 重新启用
+  仍只开 SOCD"，以及开关状态写回配置文件后能读回。自检总断言数 57 → 69。
+- **新增验证工具 `build\traytest.exe`**：启动真实程序，用 `PostMessage` 模拟托盘左键
+  和菜单项，读回 `config.cfg` 检查 `enabled / socd / dks`。
+- 版本号：主程序与安装引导都显示 **v1.0.1**（`BinKey.exe --version` → `BinKey v1.0.1`）。
+- 详见 [FIXES.md](FIXES.md) 第 16 节。
+
 ## v1.0.0 — 正式改名 BinKey，图标换成真实图片
 - **改名**：程序从 `DKSKey` 改名为 **BinKey**。可执行文件 `BinKey.exe`、
   安装程序 `BinKeySetup.exe`、窗口类名（`BinKeyTrayWindow` / `BinKeyEditor` /
@@ -27,15 +43,9 @@
 - **`BinKeySetup.exe` 图标与主程序一致**：安装引导单独嵌入 `icons\BinKey.ico`
   （就是你给的 `1.ico`，16…256 九种尺寸），资源管理器 / 桌面 / Alt-Tab 里
   引导程序和主程序显示同一个图标。
-- **图标不更新的原因找到了：资源管理器的图标缓存**。用资源管理器自己的提取接口
-  (`IShellFolder.GetUIObjectOf → IExtractIcon.GetIconLocation/Extract`) 实测：
-  `BinKey.exe`、`BinKeySetup.exe`、桌面 `BinKey.lnk` 三者提取到的 32×32 图标像素
-  哈希完全相同（`3c418df36cfd93e5`），与 `1.ico` 一致，而 `2.ico` / `3.ico` 是另外
-  两个不同的哈希 —— 说明 exe 里的图标是对的，只是 Explorer 读的是
-  `%LOCALAPPDATA%\Microsoft\Windows\Explorer\iconcache_*.db` 里的旧条目。
-  **重启资源管理器不清缓存**（`ie4uinit.exe -ClearIconCache` 也不生效），必须删掉
-  `iconcache_*.db`。因此新增 `fix-icon-cache.bat`，一键完成"停止 explorer → 删缓存 →
-  重启 explorer"。
+- **图标不更新的问题定位**：exe 里的图标是正确的，问题在资源管理器的**图标缓存**
+  (`%LOCALAPPDATA%\Microsoft\Windows\Explorer\iconcache_*.db`) —— 重启资源管理器不清缓存。
+  新增 `fix-icon-cache.bat` 一键清理。原因、实测数据与验证方法见 **FIXES.md** 第 1 节。
 - **桌面快捷方式改名为 `BinKey.lnk`**（原先是 `BinKey 动态键程.lnk`）。安装时如果
   桌面上还存在旧名字 `BinKey 动态键程.lnk`，会自动删除，避免桌面出现两个图标；
   卸载脚本也会删除 `BinKey.lnk`。
