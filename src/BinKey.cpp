@@ -41,7 +41,7 @@
 // ---------------------------------------------------------------------------
 // 常量 / 类型
 // ---------------------------------------------------------------------------
-static const char*     kVersion = "1.0.1";        // 版本号（与 BinKeySetup.exe 一致）
+static const char*     kVersion = "1.0.2";        // 版本号（与 BinKeySetup.exe 一致）
 static const ULONG_PTR TAG_SELF = 0x444B534BULL; // "DKSK" —— 我们自己注入的事件
 static const ULONG_PTR TAG_TEST = 0x54455354ULL; // "TEST" —— selftest 模拟的"物理"事件
 
@@ -281,6 +281,9 @@ static void pushAction(const Action& a) {
     g_queue.push(a);
 }
 
+static bool socdActive();
+static bool dksActive();
+
 static void doAction(const Action& a) {
     if (a.up) {
         // 若用户此刻真的物理按着这个键，就不释放它（避免把用户的按压误释放）
@@ -296,6 +299,7 @@ static void doAction(const Action& a) {
     }
 
     if (!a.vk) return;
+    if (!dksActive()) { logf("[skip-tap]  %s 总开关/ DKS 已关闭，队列中的轻点不再执行", keyName(a.vk).c_str()); return; }
     if (a.source && !userHolding(a.source)) return;   // 源键已经松开了，连发停止
     if (userHolding(a.vk)) {
         logf("[skip-down] %s 用户已经按住", keyName(a.vk).c_str());
@@ -565,7 +569,7 @@ static LRESULT CALLBACK llHook(int code, WPARAM wParam, LPARAM lParam) {
     }
     if (socdOn) syncGroup(gi, vk);
 
-    if (g_cfg.dksEnabled) {
+    if (dksActive()) {
         long long held = nowMs() - st.downAt;
         for (const Rule& r : g_cfg.rules) {
             if (r.key != vk || r.tap == 0 || r.on != ON_RELEASE) continue;
@@ -964,19 +968,57 @@ static void showMenu() {
     DestroyMenu(menu);
 }
 
+// ---------------------------------------------------------------------------
+// 托盘点击配对（一次物理点击只触发一次动作）
+// ---------------------------------------------------------------------------
+// 一次物理点击通常收到 WM_LBUTTONDOWN 然后 WM_LBUTTONUP（有的外壳只发其中一个）。
+// 用"按下 → 松手"配对状态机，而不是时间防抖：时间防抖会把"按下后超过防抖窗口
+// 才松手"的 DOWN 和 UP 当成两次点击，于是切换两次 —— 用户看到的就是
+// "左键单击没反应 / 关不掉插件"。
+struct TrayClick {
+    int  lastEvent   = 0;     // 上一条托盘事件
+    long long lastMs = 0;
+    bool downPending = false; // 有一次"按下"还没有对应的"松手"
+    long long downMs = 0;
+};
+
+static TrayClick g_leftClick{}, g_rightClick{};
+
+static bool newTrayClick(TrayClick& c, int ev, long long now) {
+    const long long pairWindow = 5000;   // 按下与松手属于同一点击的最大间隔
+    const long long dupWindow  = 200;    // 外壳重发同一事件（真正的重复消息）
+    bool isDown = (ev == WM_LBUTTONDOWN || ev == WM_RBUTTONDOWN || ev == WM_LBUTTONDBLCLK);
+
+    if (c.lastEvent == ev && now - c.lastMs < dupWindow) return false;   // 重复消息
+
+    if (isDown) {
+        c.downPending = true; c.downMs = now;
+        c.lastEvent = ev; c.lastMs = now;
+        return true;                       // 按下（含双击的第二次按下）就是一次点击
+    }
+    // UP：若它对应一次尚未关闭的"按下"，只是同一次点击的收尾，不重复触发
+    if (c.downPending && now - c.downMs < pairWindow) {
+        c.downPending = false;
+        c.lastEvent = ev; c.lastMs = now;
+        return false;
+    }
+    // 没有对应的按下 —— 有的外壳只发 UP，把这条 UP 当作一次完整点击
+    c.downPending = false;
+    c.lastEvent = ev; c.lastMs = now;
+    return true;
+}
+
 static LRESULT CALLBACK trayWndProc(HWND h, UINT msg, WPARAM w, LPARAM l) {
     if (msg == WM_TRAY) {
-        // 不同 Windows 版本/外壳可能发送 DOWN 或 UP，用防重复保护
-        static long long lastMenuMs = 0, lastToggleMs = 0;
         long long now = nowMs();
         if (l == WM_RBUTTONDOWN || l == WM_RBUTTONUP) {
-            if (now - lastMenuMs > 300) { lastMenuMs = now; showMenu(); }
+            if (newTrayClick(g_rightClick, (int)l, now)) { logf("[tray] 右键：弹出菜单"); showMenu(); }
             return 0;
         }
-        if (l == WM_LBUTTONDOWN || l == WM_LBUTTONUP) {
-            if (now - lastToggleMs > 300) {
-                lastToggleMs = now;
+        if (l == WM_LBUTTONDOWN || l == WM_LBUTTONUP || l == WM_LBUTTONDBLCLK) {
+            if (newTrayClick(g_leftClick, (int)l, now)) {
                 toggleAll();
+                logf("[tray] 左键：全部功能 %s", totalEnabled() ? "启用" : "禁用");
             }
             return 0;
         }
@@ -2044,6 +2086,113 @@ static void selfTest(bool live = false) {
                ok ? "PASS" : "FAIL");
         g_cfg.path = savedPath;
         DeleteFileW(tmpPath.c_str());
+    }
+
+    printf("=== 场景 15: 托盘左键点击配对（一次物理点击 = 一次切换） ===\n");
+    {
+        struct Ev { int msg; long long gap; };   // gap = 与上一条消息的间隔(ms)
+        auto countToggles = [&](const Ev* evs, int n) {
+            TrayClick c{}; int toggles = 0; long long t = 0;
+            for (int i = 0; i < n; ++i) {
+                t += evs[i].gap;
+                if (newTrayClick(c, evs[i].msg, t)) ++toggles;
+            }
+            return toggles;
+        };
+        struct Case { const char* name; Ev evs[6]; int n; int want; };
+        Case cases[] = {
+            {"快速点击 DOWN+UP(50ms)",      {{WM_LBUTTONDOWN,0},{WM_LBUTTONUP,50}}, 2, 1},
+            {"慢点击 DOWN+UP(700ms)",       {{WM_LBUTTONDOWN,0},{WM_LBUTTONUP,700}}, 2, 1},
+            {"按住 3 秒再松手",             {{WM_LBUTTONDOWN,0},{WM_LBUTTONUP,3000}}, 2, 1},
+            {"只发 UP 的外壳",              {{WM_LBUTTONUP,0}}, 1, 1},
+            {"只发 DOWN 的外壳",            {{WM_LBUTTONDOWN,0}}, 1, 1},
+            {"只发 UP 的外壳连点两次",      {{WM_LBUTTONUP,0},{WM_LBUTTONUP,300}}, 2, 2},
+            {"连点两次",                    {{WM_LBUTTONDOWN,0},{WM_LBUTTONUP,50},{WM_LBUTTONDOWN,200},{WM_LBUTTONUP,50}}, 4, 2},
+            {"双击 DOWN+UP+DBLCLK+UP",      {{WM_LBUTTONDOWN,0},{WM_LBUTTONUP,50},{WM_LBUTTONDBLCLK,150},{WM_LBUTTONUP,50}}, 4, 2},
+            {"只发 DOWN 的外壳连点两次",    {{WM_LBUTTONDOWN,0},{WM_LBUTTONDOWN,300}}, 2, 2},
+        };
+        for (const Case& c : cases) {
+            int got = countToggles(c.evs, c.n);
+            printf("  %-30s 切换次数=%d 期望=%d  %s\n", c.name, got, c.want, got == c.want ? "PASS" : "FAIL");
+        }
+        // 右键同理：一次右键只弹一次菜单
+        {
+            TrayClick c{}; int opens = 0;
+            if (newTrayClick(c, WM_RBUTTONDOWN, 0)) ++opens;
+            if (newTrayClick(c, WM_RBUTTONUP, 600)) ++opens;
+            printf("  %-30s 弹出次数=%d 期望=1  %s\n", "右键慢速点击", opens, opens == 1 ? "PASS" : "FAIL");
+        }
+    }
+
+    printf("=== 场景 16: 总开关关闭后，钩子的每一条路径都放行 ===\n");
+    {
+        Group g; g.keys = {A, D}; g.mode = SOC_SNAP;
+        Rule r; r.key = A; r.on = ON_RELEASE; r.tap = X; r.tapMs = 20; r.minHoldMs = 30; r.cond = C_ACTIVE;
+        setScenario({g}, {r});
+        g_cfg.socdEnabled = true;
+        g_cfg.dksEnabled  = true;
+        g_cfg.enabled     = true;
+        buildManagedKeys();
+        installHook();
+
+        auto checkFlag = [&](const char* label, bool got, bool want) {
+            printf("  %-36s 实际=%s 期望=%s  %s\n", label, got ? "开" : "关",
+                   want ? "开" : "关", got == want ? "PASS" : "FAIL");
+        };
+
+        // 先确认功能开启时确实生效
+        injectTest(A, true); pumpUntil(120);
+        injectTest(D, true); pumpUntil(30);
+        check("开启: 按 D 后 A 被 snap 释放", A, false);
+        injectTest(D, false); pumpUntil(30);
+        injectTest(A, true); pumpUntil(60);
+        injectTest(A, false); pumpUntil(10);
+        check("开启: 松 A 触发急停轻点 X", X, true);
+        pumpUntil(40);
+        check("开启: X 轻点后释放", X, false);
+
+        // 总开关关闭（单独设定仍然保留）
+        g_cfg.enabled = false;
+        checkFlag("关闭: socdActive=false", socdActive(), false);
+        checkFlag("关闭: dksActive=false",  dksActive(),  false);
+        injectTest(A, true); pumpUntil(60);
+        injectTest(D, true); pumpUntil(30);
+        check("关闭: A 不被 snap 释放", A, true);
+        check("关闭: D 也正常放行", D, true);
+        injectTest(D, false); pumpUntil(30);
+        injectTest(A, true); pumpUntil(120);
+        injectTest(A, false); pumpUntil(10);
+        check("关闭: 松 A 不触发轻点 X", X, false);
+        pumpUntil(60);
+        check("关闭: 之后 X 仍不按下", X, false);
+        UnhookWindowsHookEx(g_hook); g_hook = nullptr; clearStuckKeys();
+    }
+
+    printf("=== 场景 17: 总开关关闭时，队列里已排好的连发也不再执行 ===\n");
+    {
+        Group g; g.keys = {A, D}; g.mode = SOC_OFF;
+        Rule r; r.key = A; r.on = ON_REPEAT; r.tap = X; r.tapMs = 40; r.minHoldMs = 30;
+        r.intervalMs = 60; r.count = 0; r.cond = C_ALWAYS;
+        setScenario({g}, {r});
+        g_cfg.socdEnabled = true; g_cfg.dksEnabled = true; g_cfg.enabled = true;
+        buildManagedKeys();
+        installHook();
+
+        injectTest(A, true); pumpUntil(200);            // 连发已经开始（占空比约 40/60）
+        bool fired = false;
+        for (int i = 0; i < 20 && !fired; ++i) { if (systemDown(X)) fired = true; pumpUntil(10); }
+        printf("  %-36s 实际=%s 期望=%s  %s\n", "开启: A 按住期间 X 连发", fired ? "开" : "关", "开",
+               fired ? "PASS" : "FAIL");
+
+        g_cfg.enabled = false;                          // 左键关闭插件
+        pumpUntil(150);                                 // 已经在飞行中的轻点收尾（keyup 仍放行）
+        int leaks = 0;
+        for (int i = 0; i < 12; ++i) { if (systemDown(X)) ++leaks; pumpUntil(40); }
+        printf("  %-36s 采样命中=%d 期望=0  %s\n", "关闭: 队列中的连发不再执行", leaks,
+               leaks == 0 ? "PASS" : "FAIL");
+
+        injectTest(A, false); pumpUntil(60);
+        UnhookWindowsHookEx(g_hook); g_hook = nullptr; clearStuckKeys();
     }
 
     // --- 图标自检 ---

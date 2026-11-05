@@ -8,7 +8,7 @@
 **DKS 是它没有的功能**。BinKey 同时提供两者，并且 DKS 的核心 ——
 "**按下触发一次、松手再触发一次**" —— 用软件时间语义模拟了磁轴的多触发点。
 
-当前版本：**v1.0.1**
+当前版本：**v1.0.2**
 
 * 用法、配置、原理 → 本文档
 * 遇到的问题、图标不更新、菜单显示异常等 → **[FIXES.md](FIXES.md)**（修复与排错说明）
@@ -167,7 +167,7 @@ g++ -O2 -std=c++17 -Wall -Wextra -static -mwindows src\BinKey.cpp build\binkey_r
 | `BinKey.exe --selftest` | 内置场景自检（**虚拟自检**：把事件直接喂进钩子，不真按键盘，不会敲进任何窗口） |
 | `BinKey.exe --selftest-live` | 同样场景，但用真实 `SendInput` 注入（会真按键，用来验证注入链路） |
 | `BinKey.exe --autostart` / `--no-autostart` | 开机自启开关（写注册表 Run 键） |
-| `BinKey.exe --version` / `-v` | 打印版本号（当前 **v1.0.1**） |
+| `BinKey.exe --version` / `-v` | 打印版本号（当前 **v1.0.2**） |
 
 配置文件不存在时会自动生成一份默认配置。`debug = 1` 时写入 `BinKey.log`。
 
@@ -176,6 +176,8 @@ g++ -O2 -std=c++17 -Wall -Wextra -static -mwindows src\BinKey.cpp build\binkey_r
 ## 6. 托盘图标与菜单
 
 * **左键**：切换**总开关**（启用 / 禁用全部功能，图标颜色随之变化，并写入日志）。
+  一次物理点击只切换一次 —— 慢点击（按住几百毫秒再松手）、连点、双击都按真实
+  点击次数计数，不会因为防抖而"点了没反应"。
 * **右键**：弹出菜单
   1. 禁用全部功能 / 启用全部功能 —— **总开关**
   2. **SOCD(Snap Tap)：开启 / 关闭** —— 单独开关
@@ -377,7 +379,7 @@ build\simkey.exe a up       :: 只松开
 build\keyprobe.exe a d      :: 打印系统当前认为 A / D 是否处于按下状态（验证 SOCD）
 ```
 
-内置的 `--selftest` 会自动跑 **14 组场景 / 69 项断言**（SOCD 四种模式、snap 释放后的
+内置的 `--selftest` 会自动跑 **17 组场景 / 90 项断言**（SOCD 四种模式、snap 释放后的
 "恢复"、只开 SOCD / 只开 DKS 的组合、松手急停的延迟与时长、连点不触发、
 按住目标键时不重复注入、全局热键开关、托盘与程序图标资源等），全部 PASS 才说明逻辑正确。
 

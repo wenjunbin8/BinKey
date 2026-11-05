@@ -1,0 +1,227 @@
+=== 场景 1: SOCD snap（后输入优先） + 单键急停 ===
+[     0ms] [event]    A down
+  按住 A 120ms                         系统状态=按下 期望=按下  PASS
+[   121ms] [event]    A down
+  A 的自动重复(不应改变状态)  系统状态=按下 期望=按下  PASS
+[   152ms] [event]    D down
+[   152ms] [socd-release] A
+  按 D 后 A 应被释放               系统状态=未按下 期望=未按下  PASS
+  按 D 后 D 应生效                  系统状态=按下 期望=按下  PASS
+[   183ms] [event]    A down
+[   183ms] [swallow]   A (repeat, 已被 SOCD 释放)
+  A 的自动重复被吞掉(不应复活) 系统状态=未按下 期望=未按下  PASS
+[   214ms] [event]    A up
+[   214ms] [swallow]   A (keyup, 已被 SOCD 释放)
+  A 松手：已被 snap 释放，不触发急停 系统状态=按下 期望=按下  PASS
+[   221ms] [event]    D up
+  D 最终释放                         系统状态=未按下 期望=未按下  PASS
+=== 场景 2: 单键急停延迟与时长测量 (tap_ms=20) ===
+[   282ms] [event]    A down
+[   432ms] [event]    A up
+[   432ms] [push]   when=432 now=432 vk=68 up=0
+[   432ms] [dks-release] A -> tap D 20ms (held 150ms)
+[   432ms] [tap-down]  D (20 ms)
+  A 松手后 +4ms                       系统状态=按下 期望=按下  PASS
+  A 松手后 ~14ms                      系统状态=按下 期望=按下  PASS
+[   452ms] [keyup]     D
+  A 松手后 ~44ms                      系统状态=未按下 期望=未按下  PASS
+=== 场景 3: SOCD neutral / first / dominant ===
+[   479ms] [event]    A down
+[   531ms] [event]    D down
+[   532ms] [socd-release] A
+  neutral: A 应取消                   系统状态=未按下 期望=未按下  PASS
+  neutral: D 应取消                   系统状态=未按下 期望=未按下  PASS
+[   552ms] [event]    D up
+[   552ms] [swallow]   D (keyup, 已被 SOCD 释放)
+[   552ms] [socd-restore] A
+[   552ms] [event]    A up
+[   573ms] [event]    A down
+[   623ms] [event]    D down
+  first: A 保持                        系统状态=按下 期望=按下  PASS
+  first: D 被忽略                     系统状态=未按下 期望=未按下  PASS
+[   643ms] [event]    D up
+[   643ms] [swallow]   D (keyup, 已被 SOCD 释放)
+[   643ms] [event]    A up
+[   664ms] [event]    A down
+[   714ms] [event]    D down
+[   714ms] [socd-release] A
+  dominant=D: A 被释放                系统状态=未按下 期望=未按下  PASS
+  dominant=D: D 生效                   系统状态=按下 期望=按下  PASS
+[   734ms] [event]    D up
+[   734ms] [socd-restore] A
+[   734ms] [event]    A up
+=== 场景 4: on=press 二段触发 & on=repeat 连发 ===
+[   754ms] [event]    W down
+[   754ms] [push]   when=754 now=754 vk=88 up=0
+[   754ms] [push]   when=754 now=754 vk=89 up=0
+[   754ms] [tap-down]  X (15 ms)
+[   754ms] [tap-down]  Y (15 ms)
+  press 触发 X                         系统状态=按下 期望=按下  PASS
+[   770ms] [keyup]     X
+[   770ms] [keyup]     Y
+[   805ms] [tap-down]  Y (15 ms)
+  X 已释放                            系统状态=未按下 期望=未按下  PASS
+[   821ms] [keyup]     Y
+[   856ms] [tap-down]  Y (15 ms)
+[   871ms] [keyup]     Y
+  (日志中应看到 3 次 tap-down Y 与 3 次 keyup Y)
+[  1056ms] [event]    W up
+=== 场景 5: 用户物理按住目标键时不重复注入 ===
+[  1117ms] [event]    D down
+[  1168ms] [event]    A down
+[  1270ms] [event]    A up
+[  1270ms] [push]   when=1270 now=1270 vk=68 up=0
+[  1270ms] [dks-release] A -> tap D 20ms (held 102ms)
+[  1270ms] [skip-down] D 用户已经按住
+  D 仍由用户按住（未被轻点干扰） 系统状态=按下 期望=按下  PASS
+[  1300ms] [event]    D up
+  D 释放后系统状态                系统状态=未按下 期望=未按下  PASS
+=== 场景 6: 全局热键禁用后不再注入 ===
+[  1330ms] [save] 开关状态已写入 D:\project\BinKey\build\config.cfg (enabled=0 socd=1 dks=1)
+[  1330ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1371ms] [event]    A down
+[  1491ms] [event]    A up
+[  1491ms] [push]   when=1491 now=1491 vk=68 up=0
+[  1491ms] [dks-release] A -> tap D 20ms (held 120ms)
+[  1491ms] [tap-down]  D (20 ms)
+[  1511ms] [keyup]     D
+  禁用后松手 A 不触发 D          系统状态=未按下 期望=未按下  PASS
+[  1532ms] [save] 开关状态已写入 D:\project\BinKey\build\config.cfg (enabled=1 socd=1 dks=1)
+[  1532ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  1572ms] [event]    A down
+[  1693ms] [event]    A up
+[  1693ms] [push]   when=1693 now=1693 vk=68 up=0
+[  1693ms] [dks-release] A -> tap D 20ms (held 121ms)
+[  1693ms] [tap-down]  D (20 ms)
+  重新启用后松手 A 触发 D       系统状态=按下 期望=按下  PASS
+[  1713ms] [keyup]     D
+  D 轻点后释放                      系统状态=未按下 期望=未按下  PASS
+=== 场景 7: snap 恢复 —— A 按住,按 D 释放 A,D 松手后 A 恢复 ===
+[  1738ms] [event]    A down
+  先按住 A                            系统状态=按下 期望=按下  PASS
+[  1839ms] [event]    D down
+[  1839ms] [socd-release] A
+  按 D 后 A 被释放                  系统状态=未按下 期望=未按下  PASS
+  按 D 后 D 生效                     系统状态=按下 期望=按下  PASS
+[  1870ms] [event]    D up
+[  1870ms] [socd-restore] A
+  D 松手后 A 恢复(物理仍按住)  系统状态=按下 期望=按下  PASS
+  D 已释放                            系统状态=未按下 期望=未按下  PASS
+[  1900ms] [event]    A down
+  恢复后 A 的自动重复不改变状态 系统状态=按下 期望=按下  PASS
+[  1930ms] [event]    A up
+  最后 A 释放                        系统状态=未按下 期望=未按下  PASS
+=== 场景 8: neutral 恢复 —— 两键抵消,释放其一后另一键生效 ===
+[  1950ms] [event]    A down
+[  2002ms] [event]    D down
+[  2002ms] [socd-release] A
+  neutral: A 取消                      系统状态=未按下 期望=未按下  PASS
+  neutral: D 取消                      系统状态=未按下 期望=未按下  PASS
+[  2024ms] [event]    D up
+[  2024ms] [swallow]   D (keyup, 已被 SOCD 释放)
+[  2024ms] [socd-restore] A
+  D 松手后 A 恢复                   系统状态=按下 期望=按下  PASS
+[  2055ms] [event]    A up
+  A 松手后全部释放                系统状态=未按下 期望=未按下  PASS
+=== 场景 9: first 恢复 —— 先按的优先,先按的松手后另一键接管 ===
+[  2075ms] [event]    A down
+[  2126ms] [event]    D down
+  first: A 保持                        系统状态=按下 期望=按下  PASS
+  first: D 被忽略                     系统状态=未按下 期望=未按下  PASS
+[  2147ms] [event]    A up
+[  2147ms] [socd-restore] D
+  A 松手后 D(仍物理按住)接管   系统状态=按下 期望=按下  PASS
+[  2178ms] [event]    D up
+  D 最终释放                         系统状态=未按下 期望=未按下  PASS
+=== 场景 10: snap 恢复 + 单键急停联动 ===
+[  2198ms] [event]    A down
+[  2299ms] [event]    D down
+[  2299ms] [socd-release] A
+  A 被 snap 释放(不触发急停)     系统状态=未按下 期望=未按下  PASS
+[  2330ms] [event]    D up
+[  2330ms] [socd-restore] A
+  D 松手后 A 恢复                   系统状态=按下 期望=按下  PASS
+[  2361ms] [event]    A up
+[  2361ms] [push]   when=2361 now=2361 vk=88 up=0
+[  2361ms] [dks-release] A -> tap X 20ms (held 163ms)
+[  2361ms] [tap-down]  X (20 ms)
+  A 真正松手 -> 轻点 X             系统状态=按下 期望=按下  PASS
+[  2381ms] [keyup]     X
+  X 轻点结束                         系统状态=未按下 期望=未按下  PASS
+=== 场景 11: 只开 SOCD（DKS 关闭）—— snap 生效但不注入 ===
+[  2408ms] [event]    A down
+[  2508ms] [event]    D down
+[  2508ms] [socd-release] A
+  只开 SOCD: A 被释放               系统状态=未按下 期望=未按下  PASS
+  只开 SOCD: D 生效                  系统状态=按下 期望=按下  PASS
+[  2539ms] [event]    D up
+[  2540ms] [socd-restore] A
+  D 松手后 A 恢复                   系统状态=按下 期望=按下  PASS
+[  2570ms] [event]    A up
+  A 松手后不触发轻点 X           系统状态=未按下 期望=未按下  PASS
+=== 场景 12: 只开 DKS（SOCD 关闭）—— 不做 Snap Tap 但单键急停生效 ===
+[  2630ms] [event]    A down
+[  2691ms] [event]    D down
+  只开 DKS: A 不被释放(SOCD 关闭) 系统状态=按下 期望=按下  PASS
+[  2723ms] [event]    A up
+[  2723ms] [push]   when=2723 now=2723 vk=88 up=0
+[  2723ms] [dks-release] A -> tap X 20ms (held 93ms)
+[  2723ms] [tap-down]  X (20 ms)
+  A 松手 -> 轻点 X                   系统状态=按下 期望=按下  PASS
+[  2744ms] [keyup]     X
+  X 轻点结束                         系统状态=未按下 期望=未按下  PASS
+[  2769ms] [event]    D up
+=== 场景 13: dominant 主键未按下时，另一键仍生效 ===
+[  2800ms] [event]    D down
+  主键 A 未按，D 仍生效          系统状态=按下 期望=按下  PASS
+[  2850ms] [event]    A down
+[  2850ms] [socd-release] D
+  A(主键)按下后 D 被释放         系统状态=未按下 期望=未按下  PASS
+  A(主键)生效                        系统状态=按下 期望=按下  PASS
+[  2870ms] [event]    A up
+[  2870ms] [socd-restore] D
+  A 松手后 D 仍物理按着 -> D 恢复 系统状态=按下 期望=按下  PASS
+[  2891ms] [event]    D up
+=== 场景 14: 总开关保留单独设定（禁用全部 -> 重新启用） ===
+  只开 SOCD: socdActive              实际=开 期望=开  PASS
+  只开 SOCD: dksActive               实际=关 期望=关  PASS
+[  2913ms] [event]    A down
+[  2974ms] [event]    D down
+[  2975ms] [socd-release] A
+  只开 SOCD: A 被 snap 释放         系统状态=未按下 期望=未按下  PASS
+[  3006ms] [event]    A up
+[  3006ms] [swallow]   A (keyup, 已被 SOCD 释放)
+  DKS 关闭: 松 A 不触发轻点 X    系统状态=未按下 期望=未按下  PASS
+[  3067ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_selftest.cfg (enabled=0 socd=1 dks=0)
+[  3067ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=关）
+  禁用全部: 总开关关闭        实际=开 期望=开  PASS
+  禁用全部: 单独设定保留 SOCD 实际=开 期望=开  PASS
+  禁用全部: 单独设定保留 DKS(关) 实际=关 期望=关  PASS
+[  3067ms] [event]    D up
+[  3097ms] [event]    A down
+  禁用全部: A 不被释放(SOCD 不生效) 系统状态=按下 期望=按下  PASS
+[  3158ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_selftest.cfg (enabled=1 socd=1 dks=0)
+[  3158ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=关）
+  重新启用: SOCD 仍开            实际=开 期望=开  PASS
+  重新启用: DKS 仍关(不是两个都开) 实际=关 期望=关  PASS
+[  3158ms] [event]    D down
+[  3158ms] [socd-release] A
+  重新启用: SOCD 仍然生效(A 被释放) 系统状态=未按下 期望=未按下  PASS
+[  3189ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_selftest.cfg (enabled=1 socd=1 dks=0)
+  重启后读回 enabled/socd/dks     实际=1/1/0 期望=1/1/0  PASS
+=== 场景 15: 托盘左键点击配对（一次物理点击 = 一次切换） ===
+  快速点击 DOWN+UP(50ms)     切换次数=1 期望=1  PASS
+  慢点击 DOWN+UP(700ms)       切换次数=1 期望=1  PASS
+  按住 3 秒再松手          切换次数=1 期望=1  PASS
+  只发 UP 的外壳            切换次数=1 期望=1  PASS
+  只发 DOWN 的外壳          切换次数=1 期望=1  PASS
+  只发 UP 的外壳连点两次 切换次数=2 期望=2  PASS
+  连点两次                   切换次数=2 期望=2  PASS
+  双击 DOWN+UP+DBLCLK+UP       切换次数=2 期望=2  PASS
+  只发 DOWN 的外壳连点两次 切换次数=2 期望=2  PASS
+  右键慢速点击             弹出次数=1 期望=1  PASS
+[PASS] 托盘图标（开启状态, 内嵌 ICO 解析成功)
+[PASS] 托盘图标（关闭状态, 内嵌 ICO 解析成功)
+[PASS] 程序图标资源（1 组，Explorer/快捷方式可用)
+[PASS] 托盘注册 Shell_NotifyIcon(NIM_ADD)
+=== 自检结束 ===

@@ -25,7 +25,7 @@
 
 static const wchar_t* kCls    = L"BinKeySetupWizard";
 static const char*    kMagic  = "DSKSETUP";
-static const char*    kVer    = "1.0.1";
+static const char*    kVer    = "1.0.2";
 
 // ---- 控件 ID ----
 enum {

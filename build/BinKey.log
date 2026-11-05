@@ -14,3 +14,245 @@
 [  9305ms] [event]    A up
 [  9305ms] [swallow]   A (keyup, 已被 SOCD 释放)
 [ 10352ms] [event]    D up
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[    19ms] [tray] NIM_ADD: 成功
+[  1015ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1015ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1776ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  1776ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  2708ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  2709ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  3408ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  3408ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4467ms] [event]    A down
+[  4615ms] [event]    A up
+[  4616ms] [push]   when=4616 now=4616 vk=80 up=0
+[  4616ms] [dks-release] A -> tap P 25ms (held 149ms)
+[  4616ms] [tap-down]  P (25 ms)
+[  4642ms] [keyup]     P
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[    23ms] [tray] NIM_ADD: 成功
+[  1012ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1012ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1769ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  1769ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  2181ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  2181ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  2893ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  2893ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  3828ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  3828ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  4540ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4540ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     5ms] [tray] NIM_ADD: 成功
+[  1015ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1015ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1015ms] [tray] 左键：全部功能 禁用
+[  1774ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  1774ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  1774ms] [tray] 左键：全部功能 启用
+[  2894ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  2894ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  2894ms] [tray] 左键：全部功能 禁用
+[  3116ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  3116ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  3116ms] [tray] 左键：全部功能 启用
+[  3824ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  3824ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  3824ms] [tray] 左键：全部功能 禁用
+[  5251ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  5251ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  5251ms] [tray] 左键：全部功能 启用
+[  5963ms] [tray] 右键：弹出菜单
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     4ms] [tray] NIM_ADD: 成功
+[  1020ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1020ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1020ms] [tray] 左键：全部功能 禁用
+[  1767ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  1767ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  1767ms] [tray] 左键：全部功能 启用
+[  2881ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  2881ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  2881ms] [tray] 左键：全部功能 禁用
+[  3064ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  3064ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  3064ms] [tray] 左键：全部功能 启用
+[  3803ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  3803ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  3803ms] [tray] 左键：全部功能 禁用
+[  4514ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4514ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4514ms] [tray] 左键：全部功能 启用
+[  5228ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  5228ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  5228ms] [tray] 左键：全部功能 禁用
+[  5933ms] [tray] 右键：弹出菜单
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     4ms] [tray] NIM_ADD: 成功
+[  1020ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1020ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1020ms] [tray] 左键：全部功能 禁用
+[  1776ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  1776ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  1776ms] [tray] 左键：全部功能 启用
+[  2897ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  2897ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  2897ms] [tray] 左键：全部功能 禁用
+[  3084ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  3084ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  3084ms] [tray] 左键：全部功能 启用
+[  3827ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  3827ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  3827ms] [tray] 左键：全部功能 禁用
+[  4539ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4539ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4539ms] [tray] 左键：全部功能 启用
+[  5240ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  5240ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  5240ms] [tray] 左键：全部功能 禁用
+[  5951ms] [tray] 右键：弹出菜单
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     3ms] [tray] NIM_ADD: 成功
+[  1023ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1023ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1023ms] [tray] 左键：全部功能 禁用
+[  1782ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  1782ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  1782ms] [tray] 左键：全部功能 启用
+[  2898ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  2898ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  2898ms] [tray] 左键：全部功能 禁用
+[  3085ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  3085ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  3085ms] [tray] 左键：全部功能 启用
+[  3825ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  3825ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  3825ms] [tray] 左键：全部功能 禁用
+[  4535ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4535ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4535ms] [tray] 左键：全部功能 启用
+[  5241ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  5241ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  5241ms] [tray] 左键：全部功能 禁用
+[  5950ms] [tray] 右键：弹出菜单
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     3ms] [tray] NIM_ADD: 成功
+[  1019ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1019ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1019ms] [tray] 左键：全部功能 禁用
+[  1773ms] [event]    A down
+[  1917ms] [event]    D down
+[  2122ms] [event]    D up
+[  2247ms] [event]    A up
+[  2247ms] [push]   when=2247 now=2247 vk=80 up=0
+[  2247ms] [dks-release] A -> tap P 25ms (held 474ms)
+[  2248ms] [tap-down]  P (25 ms)
+[  2274ms] [keyup]     P
+[  2454ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  2454ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  2454ms] [tray] 左键：全部功能 启用
+[  3568ms] [event]    A down
+[  3694ms] [event]    D down
+[  3695ms] [socd-release] A
+[  3903ms] [event]    D up
+[  3903ms] [socd-restore] A
+[  4029ms] [event]    A up
+[  4029ms] [push]   when=4029 now=4029 vk=80 up=0
+[  4029ms] [dks-release] A -> tap P 25ms (held 461ms)
+[  4030ms] [tap-down]  P (25 ms)
+[  4055ms] [keyup]     P
+[  4235ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  4235ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  4235ms] [tray] 左键：全部功能 禁用
+[  4422ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4423ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4423ms] [tray] 左键：全部功能 启用
+[  5166ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  5166ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  5166ms] [tray] 左键：全部功能 禁用
+[  5881ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  5881ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  5881ms] [tray] 左键：全部功能 启用
+[  6586ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  6586ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  6586ms] [tray] 左键：全部功能 禁用
+[  7291ms] [tray] 右键：弹出菜单
+[ 70863ms] [editor] 规则编辑器已打开
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     2ms] [tray] NIM_ADD: 成功
+[  1024ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1024ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1024ms] [tray] 左键：全部功能 禁用
+[  1788ms] [event]    A down
+[  1939ms] [event]    D down
+[  2142ms] [event]    D up
+[  2265ms] [event]    A up
+[  2470ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  2470ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  2470ms] [tray] 左键：全部功能 启用
+[  3589ms] [event]    A down
+[  3712ms] [event]    D down
+[  3712ms] [socd-release] A
+[  3915ms] [event]    D up
+[  3915ms] [socd-restore] A
+[  4043ms] [event]    A up
+[  4043ms] [push]   when=4043 now=4043 vk=80 up=0
+[  4043ms] [dks-release] A -> tap P 25ms (held 454ms)
+[  4043ms] [tap-down]  P (25 ms)
+[  4068ms] [keyup]     P
+[  4260ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  4260ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  4260ms] [tray] 左键：全部功能 禁用
+[  4448ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4448ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4448ms] [tray] 左键：全部功能 启用
+[  5203ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  5203ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  5203ms] [tray] 左键：全部功能 禁用
+[  5913ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  5913ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  5913ms] [tray] 左键：全部功能 启用
+[  6624ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  6624ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  6624ms] [tray] 左键：全部功能 禁用
+[  7338ms] [tray] 右键：弹出菜单
+﻿[     0ms] [tray] 图标: 开启=内嵌 tray_on.ico 关闭=内嵌 tray_off.ico 程序=内嵌 BinKey.ico
+[     3ms] [tray] NIM_ADD: 成功
+[  1007ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  1007ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  1007ms] [tray] 左键：全部功能 禁用
+[  1760ms] [event]    A down
+[  1885ms] [event]    D down
+[  2088ms] [event]    D up
+[  2212ms] [event]    A up
+[  2415ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  2415ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  2415ms] [tray] 左键：全部功能 启用
+[  3525ms] [event]    A down
+[  3663ms] [event]    D down
+[  3663ms] [socd-release] A
+[  3865ms] [event]    D up
+[  3865ms] [socd-restore] A
+[  3990ms] [event]    A up
+[  3990ms] [push]   when=3990 now=3990 vk=80 up=0
+[  3990ms] [dks-release] A -> tap P 25ms (held 465ms)
+[  3992ms] [tap-down]  P (25 ms)
+[  4017ms] [keyup]     P
+[  4195ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  4195ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  4195ms] [tray] 左键：全部功能 禁用
+[  4384ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  4384ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  4384ms] [tray] 左键：全部功能 启用
+[  5119ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  5119ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  5119ms] [tray] 左键：全部功能 禁用
+[  5823ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=1 socd=1 dks=1)
+[  5823ms] [switch] 全部功能 启用（单独设定: SOCD=开 DKS=开）
+[  5823ms] [tray] 左键：全部功能 启用
+[  6523ms] [save] 开关状态已写入 C:\Users\26397\AppData\Local\Temp\BinKey_clicktest.cfg (enabled=0 socd=1 dks=1)
+[  6523ms] [switch] 全部功能 禁用（单独设定: SOCD=开 DKS=开）
+[  6523ms] [tray] 左键：全部功能 禁用
+[  7229ms] [tray] 右键：弹出菜单

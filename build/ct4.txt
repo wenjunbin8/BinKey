@@ -1,0 +1,8 @@
+初始: enabled=-1 socd=1 dks=1
+点击 1 (DOWN+UP, 40ms): enabled=0 socd=1 dks=1
+点击 2 (DOWN+UP, 400ms): enabled=1 socd=1 dks=1   -> 期望只翻转一次
+点击 3+4 (快速连点两次): enabled=1 socd=1 dks=1   -> 期望翻转两次(回到原状态)
+点击 5 (只有 UP): enabled=0 socd=1 dks=1
+点击 6 (只有 DOWN): enabled=1 socd=1 dks=1
+点击 7 (DBLCLK): enabled=0 socd=1 dks=1
+右键慢速点击后: enabled=0 socd=1 dks=1   -> 期望不变

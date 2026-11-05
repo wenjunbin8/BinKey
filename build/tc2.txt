@@ -1,0 +1,8 @@
+初始: enabled=-1 socd=1 dks=1
+左键单击(按住500ms): enabled=0 socd=1 dks=1  [PASS 已关闭]
+  关闭后键盘行为    A=按下 D=按下 -> 放行（插件关闭）
+左键再单击(按住500ms): enabled=1 socd=1 dks=1  [PASS 已启用]
+  启用后键盘行为    A=未按下 D=按下 -> SOCD 生效
+菜单"禁用全部功能": enabled=0 socd=1 dks=1  [PASS]
+  关闭后键盘行为    A=按下 D=按下 -> 放行（插件关闭）
+菜单"启用全部功能": enabled=1 socd=1 dks=1  [PASS]

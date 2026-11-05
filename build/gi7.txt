@@ -1,0 +1,10 @@
+[test] installer pid=30496
+[test] wizard: 720x400
+[test] options page buttons: 开机自动启动 (开机后自动运行 BinKey)(id=106) 创建桌面快捷方式 (BinKey.lnk)(id=107) 安装完成后立即启动 BinKey(id=108) 上一步(id=102) 安装(id=103) 退出(id=113) 
+[test] finish page buttons: 退出(id=113) 打开规则编辑器(id=111) 
+[test] keyboard events during install: 0
+[test] editor window: OK
+[test] wizard still open: NO (expect closed)
+[test] editor size 790x560
+[test] total keyboard events: 0
+[test] PASS (no keystrokes leaked)

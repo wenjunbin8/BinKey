@@ -1,0 +1,6 @@
+初始: enabled=-1 socd=1 dks=1
+点击 1 (DOWN+UP): enabled=0 socd=1 dks=1   -> 期望 enabled 翻转一次
+点击 2+3 (快速连点两次): enabled=1 socd=1 dks=1
+点击 4 (只有 UP): enabled=0 socd=1 dks=1
+点击 5 (只有 DOWN): enabled=1 socd=1 dks=1
+点击 6 (DBLCLK): enabled=1 socd=1 dks=1
